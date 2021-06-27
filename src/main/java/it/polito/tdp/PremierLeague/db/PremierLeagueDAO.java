@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import it.polito.tdp.PremierLeague.model.Action;
 import it.polito.tdp.PremierLeague.model.Player;
@@ -50,6 +51,33 @@ public class PremierLeagueDAO {
 						res.getInt("Assists"),res.getInt("TotalFoulsConceded"),res.getInt("Offsides"));
 				
 				result.add(action);
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<Player> getVertici(double soglia, Map<Integer, Player> giocatori) {
+		String sql = "SELECT a.PlayerID, AVG(Goals)AS media "
+				+ "FROM actions a "
+				+ "GROUP BY a.PlayerID "
+				+ "HAVING media >= ? ";
+		List<Player> result = new ArrayList<Player>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setDouble(1, soglia);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+			
+				Player p = giocatori.get(res.getInt("a.PlayerID"));
+				if(p!=null)
+					result.add(p);
 			}
 			conn.close();
 			return result;
