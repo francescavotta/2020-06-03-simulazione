@@ -60,6 +60,19 @@ public class FXMLController {
 
     @FXML
     void doDreamTeam(ActionEvent event) {
+    	txtResult.clear();
+    	
+    	
+    	int num;
+    	try {
+    		num = Integer.parseInt(this.txtK.getText());
+    		txtResult.appendText(model.squadraDeiSogni(num).toString());
+    		txtResult.appendText("\nIl grado raggiunto è: " + model.getGradoMax());
+    		
+    	}catch(NumberFormatException nfe) {
+    		txtResult.appendText("Inserire un numero giocatori ammissibile");
+    		return;
+    	}
 
     }
 

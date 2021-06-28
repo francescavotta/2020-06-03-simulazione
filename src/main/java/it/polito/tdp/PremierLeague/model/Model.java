@@ -20,6 +20,8 @@ public class Model {
 	Map <Integer, Player> giocatori;
 	PremierLeagueDAO dao;
 	Player migliore;
+	List<Player> soluzioneMigliore;
+	double gradoMax;
 	
 	public String creaGrafo(double soglia){
 		dao = new PremierLeagueDAO();
@@ -80,4 +82,62 @@ public class Model {
 		return result;
 	}
 
+	public List<Player> squadraDeiSogni(int numGiocatori){
+		soluzioneMigliore = new ArrayList<>();
+		gradoMax = 0;
+		List<Player> parziale = new ArrayList<>();
+		for(Player p: grafo.vertexSet()) {
+			parziale.add(p);
+			ricorsione(numGiocatori, parziale);
+		}
+		
+		return soluzioneMigliore;
+	}
+	
+	private void ricorsione(int numGiocatori, List<Player> parziale) {
+		//casi terminali
+		if(parziale.size() == numGiocatori) {
+			if(calcolaGrado(parziale) > gradoMax ) {
+				gradoMax = calcolaGrado(parziale);
+				this.soluzioneMigliore = new ArrayList<>(parziale);
+			}
+			return;
+		}
+
+		//ricorsione vera e propria
+		Player p = parziale.get(parziale.size()-1);
+		for(DefaultWeightedEdge e: grafo.incomingEdgesOf(p)) {
+			Player pp = Graphs.getOppositeVertex(grafo, e, p);
+			if(!parziale.contains(pp)) {
+				parziale.add(pp);
+				ricorsione(numGiocatori, parziale);
+				parziale.remove(parziale.size()-1);
+			}
+		}
+	}
+
+	
+	private double calcolaGrado(List<Player> parziale) {
+		double somma = 0;
+		
+		for(Player p: parziale) {
+			for(DefaultWeightedEdge e: grafo.outgoingEdgesOf(p)) {
+				somma = somma + grafo.getEdgeWeight(e);
+			}
+			for(DefaultWeightedEdge e: grafo.incomingEdgesOf(p)) {
+				somma = somma - grafo.getEdgeWeight(e);
+			}
+		}
+		return somma;
+	}
+
+	public List<Player> getSoluzioneMigliore() {
+		return soluzioneMigliore;
+	}
+
+	public double getGradoMax() {
+		return gradoMax;
+	}
+	
+	
 }
