@@ -49,7 +49,7 @@ public class FXMLController {
     	try {
     		soglia = Double.parseDouble(this.txtGoals.getText());
     		txtResult.appendText(model.creaGrafo(soglia));
-    		
+    		this.btnTopPlayer.setDisable(false);
     		
     	}catch(NumberFormatException nfe) {
     		txtResult.appendText("Inserire un valore soglia ammissibile");
@@ -65,7 +65,10 @@ public class FXMLController {
 
     @FXML
     void doTopPlayer(ActionEvent event) {
-
+    	txtResult.clear();
+    	
+    	txtResult.appendText("\nIl top player è: " + model.topPlayer().toString());
+        txtResult.appendText("\nLa lista dei battuti è : \n" + model.battuti().toString());	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -81,5 +84,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.btnTopPlayer.setDisable(true);
     }
 }

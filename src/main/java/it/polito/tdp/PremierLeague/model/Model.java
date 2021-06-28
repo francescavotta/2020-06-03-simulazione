@@ -1,5 +1,7 @@
 package it.polito.tdp.PremierLeague.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ public class Model {
 	Map <Integer, Player> idMap;
 	Map <Integer, Player> giocatori;
 	PremierLeagueDAO dao;
+	Player migliore;
 	
 	public String creaGrafo(double soglia){
 		dao = new PremierLeagueDAO();
@@ -41,7 +44,7 @@ public class Model {
 				
 			}else {
 				if(a.getPeso() < 0) {
-					Graphs.addEdge(grafo, a.getP2(), a.getP1(), a.getPeso());
+					Graphs.addEdge(grafo, a.getP2(), a.getP1(), Math.abs(a.getPeso()));
 				}else {
 					Graphs.addEdge(grafo, a.getP1(), a.getP2(), a.getPeso());
 				}
@@ -50,6 +53,31 @@ public class Model {
 		
 		
 		return String.format("Il grafo è stato creato con %d vertici e %d archi", grafo.vertexSet().size(), grafo.edgeSet().size());
+	}
+	
+	public Player topPlayer() {
+		migliore = null;
+		double numAvversari = 0;
+		
+		for(Player p: grafo.vertexSet()) {
+			double num = grafo.outDegreeOf(p);
+			
+			
+			if(num > numAvversari) {
+				migliore = p;
+				numAvversari = num;
+			}
+		}
+		return migliore;
+	}
+	
+	public List<PlayerBattuto> battuti(){
+		List<PlayerBattuto> result = new ArrayList<>();
+		for(DefaultWeightedEdge e: grafo.outgoingEdgesOf(migliore)) {
+			result.add(new PlayerBattuto(grafo.getEdgeTarget(e), grafo.getEdgeWeight(e)));
+		}
+		Collections.sort(result);
+		return result;
 	}
 
 }
