@@ -44,6 +44,17 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	double soglia;
+    	try {
+    		soglia = Double.parseDouble(this.txtGoals.getText());
+    		txtResult.appendText(model.creaGrafo(soglia));
+    		
+    		
+    	}catch(NumberFormatException nfe) {
+    		txtResult.appendText("Inserire un valore soglia ammissibile");
+    		return;
+    	}
 
     }
 

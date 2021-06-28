@@ -1,5 +1,6 @@
 package it.polito.tdp.PremierLeague.model;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,8 @@ public class Model {
 	public String creaGrafo(double soglia){
 		dao = new PremierLeagueDAO();
 		grafo = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+		giocatori = new HashMap<>();
+		idMap = new HashMap<>();
 		
 		for(Player pp: dao.listAllPlayers()) {
 			giocatori.put(pp.getPlayerID(), pp);
@@ -31,7 +34,22 @@ public class Model {
 		}
 		
 		Graphs.addAllVertices(grafo, vertici);
-		return null;
+		
+		//aggiungo gli archi
+		for(Adiacenza a : dao.getAdiacenze(idMap)) {
+			if(grafo.containsEdge(a.getP1(), a.getP2()) || grafo.containsEdge(a.getP2(), a.getP1())) {
+				
+			}else {
+				if(a.getPeso() < 0) {
+					Graphs.addEdge(grafo, a.getP2(), a.getP1(), a.getPeso());
+				}else {
+					Graphs.addEdge(grafo, a.getP1(), a.getP2(), a.getPeso());
+				}
+			}
+		}
+		
+		
+		return String.format("Il grafo è stato creato con %d vertici e %d archi", grafo.vertexSet().size(), grafo.edgeSet().size());
 	}
 
 }

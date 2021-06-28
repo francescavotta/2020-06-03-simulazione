@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import it.polito.tdp.PremierLeague.model.Action;
+import it.polito.tdp.PremierLeague.model.Adiacenza;
 import it.polito.tdp.PremierLeague.model.Player;
 
 public class PremierLeagueDAO {
@@ -65,7 +66,7 @@ public class PremierLeagueDAO {
 		String sql = "SELECT a.PlayerID, AVG(Goals)AS media "
 				+ "FROM actions a "
 				+ "GROUP BY a.PlayerID "
-				+ "HAVING media >= ? ";
+				+ "HAVING media > ? ";
 		List<Player> result = new ArrayList<Player>();
 		Connection conn = DBConnect.getConnection();
 
@@ -86,5 +87,40 @@ public class PremierLeagueDAO {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public List<Adiacenza> getAdiacenze(Map <Integer, Player> idMap){
+		String sql = "SELECT a1.PlayerID, a2.PlayerID, (SUM(a1.TimePlayed)- SUM(a2.TimePlayed)) AS peso "
+				+ "FROM actions a1, actions a2 "
+				+ "WHERE a1.TeamID <> a2.TeamID AND "
+				+ "a1.`Starts`=1 AND "
+				+ "a2.`Starts` = 1 AND "
+				+ "a1.MatchID = a2.MatchID AND "
+				+ "a1.PlayerID < a2.PlayerID "
+				+ "GROUP BY a1.PlayerID, a2.PlayerID "
+				+ "HAVING peso <> 0";
+		List<Adiacenza> result = new ArrayList<Adiacenza>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+				Player p1 = idMap.get(res.getInt("a1.PlayerID"));
+				Player p2 = idMap.get(res.getInt("a2.PlayerID"));
+				if(p1 != null && p2 != null) {
+					Adiacenza a = new Adiacenza(p1,p2, res.getDouble("peso"));
+					result.add(a);
+				}
+			
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
 	}
 }
