@@ -67,7 +67,9 @@ public class FXMLController {
     	try {
     		num = Integer.parseInt(this.txtK.getText());
     		txtResult.appendText(model.squadraDeiSogni(num).toString());
-    		txtResult.appendText("\nIl grado raggiunto è: " + model.getGradoMax());
+    		txtResult.appendText("\n" +model.getDreamTeam(num).toString());
+    		txtResult.appendText("\nIl 1 grado raggiunto è: " + model.getGradoMax());
+    		txtResult.appendText("\nIl 2 grado raggiunto è: " + model.getBestDegree());
     		
     	}catch(NumberFormatException nfe) {
     		txtResult.appendText("Inserire un numero giocatori ammissibile");

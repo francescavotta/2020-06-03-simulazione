@@ -22,6 +22,8 @@ public class Model {
 	Player migliore;
 	List<Player> soluzioneMigliore;
 	double gradoMax;
+	int bestDegree;
+	List<Player> dreamTeam;
 	
 	public String creaGrafo(double soglia){
 		dao = new PremierLeagueDAO();
@@ -86,15 +88,13 @@ public class Model {
 		soluzioneMigliore = new ArrayList<>();
 		gradoMax = 0;
 		List<Player> parziale = new ArrayList<>();
-		for(Player p: grafo.vertexSet()) {
-			parziale.add(p);
-			ricorsione(numGiocatori, parziale);
-		}
+		List<Player> giocatoriRimasti = new ArrayList<>(grafo.vertexSet());
+		ricorsione(numGiocatori, parziale, giocatoriRimasti);
 		
 		return soluzioneMigliore;
 	}
 	
-	private void ricorsione(int numGiocatori, List<Player> parziale) {
+	private void ricorsione(int numGiocatori, List<Player> parziale, List<Player> giocatoriRimasti) {
 		//casi terminali
 		if(parziale.size() == numGiocatori) {
 			if(calcolaGrado(parziale) > gradoMax ) {
@@ -105,16 +105,18 @@ public class Model {
 		}
 
 		//ricorsione vera e propria
-		Player p = parziale.get(parziale.size()-1);
-		for(DefaultWeightedEdge e: grafo.incomingEdgesOf(p)) {
-			Player pp = Graphs.getOppositeVertex(grafo, e, p);
-			if(!parziale.contains(pp)) {
-				parziale.add(pp);
-				ricorsione(numGiocatori, parziale);
-				parziale.remove(parziale.size()-1);
+		for(Player p: giocatoriRimasti) {
+			if(!parziale.contains(p)) {
+			parziale.add(p);
+			List<Player> gioc = new ArrayList<>(giocatoriRimasti);
+			gioc.removeAll(Graphs.successorListOf(grafo, p));
+			ricorsione(numGiocatori, parziale, gioc);
+			parziale.remove(parziale.size()-1);
 			}
 		}
 	}
+
+	
 
 	
 	private double calcolaGrado(List<Player> parziale) {
@@ -137,6 +139,62 @@ public class Model {
 
 	public double getGradoMax() {
 		return gradoMax;
+	}
+	
+	public List<Player> getDreamTeam(int k){
+		this.bestDegree = 0;
+		this.dreamTeam = new ArrayList<Player>();
+		List<Player> partial = new ArrayList<Player>();
+		
+		this.recursive(partial, new ArrayList<Player>(this.grafo.vertexSet()), k);
+
+		return dreamTeam;
+	}
+	
+	public void recursive(List<Player> partial, List<Player> players, int k) {
+		if(partial.size() == k) {
+			int degree = this.getDegree(partial);
+			if(degree > this.bestDegree) {
+				dreamTeam = new ArrayList<>(partial);
+				bestDegree = degree;
+			}
+			return;
+		}
+		
+		for(Player p : players) {
+			if(!partial.contains(p)) {
+				partial.add(p);
+				//i "battuti" di p non possono più essere considerati
+				List<Player> remainingPlayers = new ArrayList<>(players);
+				remainingPlayers.removeAll(Graphs.successorListOf(grafo, p));
+				recursive(partial, remainingPlayers, k);
+				partial.remove(p);
+				
+			}
+		}
+	}
+	
+	private int getDegree(List<Player> team) {
+		int degree = 0;
+		int in;
+		int out;
+
+		for(Player p : team) {
+			in = 0;
+			out = 0;
+			for(DefaultWeightedEdge edge : this.grafo.incomingEdgesOf(p))
+				in += (int) this.grafo.getEdgeWeight(edge);
+			
+			for(DefaultWeightedEdge edge : grafo.outgoingEdgesOf(p))
+				out += (int) grafo.getEdgeWeight(edge);
+		
+			degree += (out-in);
+		}
+		return degree;
+	}
+	
+	public Integer getBestDegree() {
+		return bestDegree;
 	}
 	
 	
